@@ -155,9 +155,9 @@ capture_audio () {
 
         sox_info=($(ps -eo ppid,pid,comm | sed -n 's/[^[:space:]]*sox$//p' | xargs)) # "ppid pid"
 
-                parent_process=$(ps -o command= -p ${sox_info[0]})
+                parent_process=$(ps -o command= -p "${sox_info[0]}")
                 if [[ $parent_process =~ "anki-mine.sh -a" || $parent_process =~ "anki-mine.sh --audio" ]]; then
-                        kill -15 ${sox_info[1]}
+                        kill -15 "${sox_info[1]}"
                         echo "Stopping recording..."
                         osascript -e 'display notification "Stopped recording audio" with title "Mining"'
                         exit 0
@@ -168,15 +168,15 @@ capture_audio () {
 
                 echo "Recording audio..."
                 osascript -e 'display notification "Started recording audio" with title "Mining"'
-                sox -t coreaudio "$input_device" "$tmp_file" silence 1 0 50d
+                sox -t coreaudio "$input_device" "$tmp_file" silence 1 0 -50d
                 if $opus ; then
                         output="$output_path.opus"
                         # Mono VBR Opus with a target bitrate of 24kBit/s
-                        ffmpeg -i $tmp_file -f opus -b:a 24k -ac 1 -c:a libopus -application voip -apply_phase_inv 0 -af "loudnorm=I=-16:TP=-6.2:LRA=11:dual_mono=true" "$output"
+                        ffmpeg -i "$tmp_file" -f opus -b:a 24k -ac 1 -c:a libopus -application voip -apply_phase_inv 0 -af "loudnorm=I=-16:TP=-6.2:LRA=11:dual_mono=true" "$output"
                 else
                         output="$output_path.mp3"
                         # Mono MP3 V3
-                        ffmpeg -i $tmp_file -f mp3 -q:a 3 -ac 1 -af "loudnorm=I=-16:TP=-6.2:LRA=11:dual_mono=true" "$output"
+                        ffmpeg -i "$tmp_file" -f mp3 -q:a 3 -ac 1 -af "loudnorm=I=-16:TP=-6.2:LRA=11:dual_mono=true" "$output"
                 fi
 
                 input=$output
